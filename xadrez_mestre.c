@@ -1,18 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
- * Mestre/mestre.C
- * Versão avançada do simulador de movimentos de peças de xadrez.
- * Alterações para o desafio final:
- * - Torre e Rainha: implementadas com funções recursivas (substituem loops simples)
- * - Bispo: movimento diagonal para cima-direita usando loops aninhados
- * - Cavalo: movimento em L (agora para cima e direita) usando loops com múltiplas variáveis
- * - Programa jogável com menu interativo e funcionalidades extras (resumo / reset)
- *
- * Observações de implementação:
- * - Apenas tipos inteiros e cadeias literais são utilizados para os contadores e
- *   configurações de movimento.
+/* 
+ * Programa: Simulador de Movimento de Peças de Xadrez
+ * Descrição: Este programa simula o movimento de quatro peças de xadrez:
+ * - Torre: 5 casas para a direita (usando recursão)
+ * - Bispo: 5 casas na diagonal superior direita (usando loops aninhados)
+ * - Rainha: 8 casas para a esquerda (usando recursão)
+ * - Cavalo: movimento em L - 2 casas para cima e 1 para direita (usando loops aninhados)
  */
 
 // Constantes de movimento (definidas em código conforme requerido)
@@ -33,25 +28,20 @@ void limparTela() {
     system("cls");
 }
 
-/* Função recursiva para mover a Torre para a direita.
- * Parâmetros: passos_restantes - número de casas ainda a mover
- * Comportamento: imprime "Direita" a cada chamada até chegar a zero.
- */
-void moverTorreRec(int passos_restantes) {
-    if (passos_restantes <= 0) return;
+/* Função recursiva para mover a Torre */
+void moverTorre(int passos) {
+    if (passos <= 0) return;
     printf("Direita\n");
     contador_torre++;
-    moverTorreRec(passos_restantes - 1); // chamada recursiva
+    moverTorre(passos - 1);
 }
 
-/* Função recursiva para mover a Rainha para a esquerda.
- * Parâmetros: passos_restantes - número de casas ainda a mover
- */
-void moverRainhaRec(int passos_restantes) {
-    if (passos_restantes <= 0) return;
+/* Função recursiva para mover a Rainha */
+void moverRainha(int passos) {
+    if (passos <= 0) return;
     printf("Esquerda\n");
     contador_rainha++;
-    moverRainhaRec(passos_restantes - 1);
+    moverRainha(passos - 1);
 }
 
 /* Movimento do Bispo usando loops aninhados.
@@ -59,62 +49,44 @@ void moverRainhaRec(int passos_restantes) {
  * externo para controlar o número de casas e um loop interno que imprime as
  * partes da direção separadamente — demonstração de loops aninhados.
  */
-void moverBispoNested() {
-    int i, parte;
-    for (i = 0; i < MOVIMENTO_BISPO; i++) {
-        // Loop interno: duas "partes" da diagonal (Cima e Direita)
-        for (parte = 0; parte < 2; parte++) {
-            if (parte == 0) {
-                // imprimimos a primeira parte sem quebrar a linha
-                printf("Cima");
-            } else {
-                // segunda parte: adiciona a vírgula e imprime Direita
-                printf(", Direita");
-            }
+/* Movimento do Bispo usando loops aninhados */
+void moverBispo() {
+    // Loop externo: controla número de movimentos diagonais
+    for (int i = 0; i < MOVIMENTO_BISPO; i++) {
+        // Loop interno: controla as direções do movimento diagonal
+        for (int dir = 0; dir < 2; dir++) {
+            printf("%s%s", dir == 0 ? "Cima" : ", Direita", dir == 1 ? "\n" : "");
         }
-        // fim do passo diagonal
-        printf("\n");
         contador_bispo++;
     }
 }
 
-/* Movimento do Cavalo em L: agora definido como 1 vez para cima e à direita.
- * Requisitos: utilizar loops com múltiplas variáveis/condições, permitir uso de
- * continue e break. Implementamos dois loops aninhados: um for externo que
- * percorre as "fases" do L e um while interno que realiza os passos de cada
- * fase; o código demonstra continue/break conforme solicitado.
- */
-void moverCavaloLoops() {
-    int fase, passos, j;
-    // uma iteração completa em L: primeira fase = vertical (para cima),
-    // segunda fase = horizontal (direita)
-    for (fase = 0; fase < 2; fase++) {
-        passos = (fase == 0) ? MOVIMENTO_CAVALO_VER : MOVIMENTO_CAVALO_HOR;
-        j = 0;
-
+/* Movimento do Cavalo usando loops aninhados e controle de fluxo */
+void moverCavalo() {
+    int direcoes_completadas = 0;
+    
+    // Loop externo: controla as fases do movimento em L
+    for (int fase = 0; fase < 2 && direcoes_completadas < 3; fase++) {
+        int movimentos_necessarios = (fase == 0) ? 2 : 1; // 2 para cima, 1 para direita
+        int movimentos_feitos = 0;
+        
+        // Loop interno: realiza os movimentos de cada fase
         while (1) {
-            if (j >= passos) {
-                // já completamos os passos desta fase
-                break; // sai do while
+            // Verifica se completou os movimentos desta fase
+            if (movimentos_feitos >= movimentos_necessarios) {
+                break;
             }
-
-            // demonstrando continue: se por algum motivo passos forem zero,
-            // pula para a próxima iteração (não ocorre aqui, mas demonstra uso)
-            if (passos == 0) {
-                j++;
+            
+            // Se já fez todos os movimentos necessários, sai
+            if (direcoes_completadas >= 3) {
                 continue;
             }
-
-            if (fase == 0) {
-                printf("Cima\n");
-            } else {
-                printf("Direita\n");
-            }
-
-            // atualiza counters
+            
+            // Executa o movimento
+            printf("%s\n", fase == 0 ? "Cima" : "Direita");
+            movimentos_feitos++;
+            direcoes_completadas++;
             contador_cavalo++;
-
-            j++;
         }
     }
 }
@@ -134,17 +106,19 @@ void resetResumo() {
     contador_torre = contador_bispo = contador_rainha = contador_cavalo = 0;
 }
 
+
+
 int main() {
     int opcao = 0;
 
     do {
         limparTela();
-        printf("=== Simulador Mestre (Avançado) ===\n");
-        printf("1 - Mover Torre (recursivo, 5 Direita)\n");
-        printf("2 - Mover Bispo (loops aninhados, 5 Cima, Direita)\n");
-        printf("3 - Mover Rainha (recursivo, 8 Esquerda)\n");
-        printf("4 - Mover Cavalo (1x L: Cima,Cima,Direita com loops)\n");
-        printf("5 - Mostrar resumo de movimentos\n");
+        printf("=== Simulador de Xadrez ===\n");
+        printf("1 - Mover Torre (recursivo)\n");
+        printf("2 - Mover Bispo (loops aninhados)\n");
+        printf("3 - Mover Rainha (recursivo)\n");
+        printf("4 - Mover Cavalo (loops aninhados)\n");
+        printf("5 - Mostrar resumo\n");
         printf("6 - Resetar resumo\n");
         printf("7 - Sair\n");
         printf("Escolha uma opção: ");
@@ -158,25 +132,25 @@ int main() {
         switch (opcao) {
             case 1:
                 printf("\n=== Movimento da Torre ===\n");
-                moverTorreRec(MOVIMENTO_TORRE);
+                moverTorre(MOVIMENTO_TORRE);
                 printf("\nPressione Enter para continuar...");
-                getchar(); getchar(); // pausa
+                getchar(); getchar();
                 break;
             case 2:
                 printf("\n=== Movimento do Bispo ===\n");
-                moverBispoNested();
+                moverBispo();
                 printf("\nPressione Enter para continuar...");
                 getchar(); getchar();
                 break;
             case 3:
                 printf("\n=== Movimento da Rainha ===\n");
-                moverRainhaRec(MOVIMENTO_RAINHA);
+                moverRainha(MOVIMENTO_RAINHA);
                 printf("\nPressione Enter para continuar...");
                 getchar(); getchar();
                 break;
             case 4:
                 printf("\n=== Movimento do Cavalo ===\n");
-                moverCavaloLoops();
+                moverCavalo();
                 printf("\nPressione Enter para continuar...");
                 getchar(); getchar();
                 break;
